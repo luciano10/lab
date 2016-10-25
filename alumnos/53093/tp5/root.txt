@@ -1,0 +1,26 @@
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <assert.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <signal.h>
+
+char * ruta (char * doc ){
+	
+	int  file;
+	char buffer[1024];
+	char * cadena;
+	file=open (doc,O_RDONLY,NULL);
+	read(file,buffer,sizeof buffer);
+	cadena=strtok(buffer,"\n");
+	cadena=strtok(NULL,"/");
+	cadena=strtok(NULL,"\n");
+	return cadena;
+}

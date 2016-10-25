@@ -1,0 +1,197 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <assert.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <pthread.h>
+#include <string.h>
+char* extension (char*);
+char * name (char *);
+int  get (int ad ,char * buff, char *path ){
+
+	int file2,leido,op=-1;
+	char buff2[1024];
+	char buffer[2048];
+	//char error403[14]="403 Forbidden\n";
+	char error404[23]="ERROR 404  Not Found\n";
+	char ok200[9]="2OO OK\n";
+	char* exten;
+	char * nombre;
+	char ruta[100];
+	char barra[20]="/";
+	memset(buffer,0,sizeof buffer);
+
+	strcpy(buff2,buff);
+	exten=extension(buff);
+	nombre=name(buff2);
+	strcpy(ruta,path);
+	strcat(barra,nombre);
+	strcat(ruta,barra);
+
+	if (!strcmp(exten,"html")){
+		op=2;
+	}	
+	if (!strcmp(exten,"txt")){
+		op=3;
+	}
+	if (!strcmp(exten,"jpg")){
+		op=4;
+	}
+	if (!strcmp(exten,"pdf")){
+		op=1;
+	}
+	if (!strcmp(exten,"mp3")){
+		op=5;
+	}
+	if (!strcmp(exten,"mp4")){
+		op=6;
+	}
+	if (!strcmp(exten,"gif")){
+		op=7;
+	}
+	if (!strcmp(exten,"json")){
+		op=8;
+	}
+	if (buff2[5]==' '){
+		op=9;	
+	}	
+	switch(op){
+		case 2:
+			write(ad,"HTTP/1.0 200 ok\n",16);
+			write(ad,"Content-Type: text/html\n\n",25);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+
+			close (file2);
+			break;
+		case 3:
+			write(ad,"HTTP/1.0 200 ok\n",16);
+			write(ad,"Content-Type: text/html\n\n",25);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+			close (file2);
+			break;
+		case 1:
+			write(ad,"HTTP/1.0 200 ok\n\n",17);
+			write(ad,"Content-Type: application/pdf\n",30);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+			close (file2);
+			break; 
+		case 4:
+			write(ad,"HTTP/1.0 200 ok\n",16);
+			write(ad,"Content-Type: image/jpg\n\n",25);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+			close (file2);
+			break;
+		case 5:
+			write(ad,"HTTP/1.0 200 ok\n\n",17);
+			write(ad,"Content-Type: audio/mp3\n\n",26);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+			close (file2);
+			break;
+		case 6: 
+			write(ad,"HTTP/1.0 200 ok\n",16);
+			write(ad,"Content-Type: video/mp4\n\n",25);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+			close (file2);
+			break;
+		case 7:
+			write(ad,"HTTP/1.0 200 ok\n",16);
+			write(ad,"Content-Type: image/gif\n\n",25);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+			close (file2);
+			break;
+		case 8:
+			write(ad,"HTTP/1.0 200 ok\n",16);
+			write(ad,"Content-Type: application/json\n\n",32);
+			file2 = open(ruta,O_RDONLY,NULL);
+			while ((leido=read(file2,buffer,sizeof buffer))>0){
+				write (ad,buffer,leido);
+			}
+			if (file2 < 0){
+				write (ad,error404,23);
+				return 0;
+			}
+			close (file2);
+			break;
+
+		case 9:
+			write (ad,ok200,9);
+			break;
+		default:
+			write (ad,error404,23);	
+			break;
+	}
+	return 0;
+}
+char * extension (char*  buff){
+	
+	char * cadena;
+	cadena=strtok(buff,".");
+	cadena=strtok(NULL," ");
+	return cadena;
+
+} 
+char * name (char*  buff){
+	
+	char * cadena;
+	cadena=strtok(buff,"/");
+	cadena=strtok(NULL," ");
+	return cadena;
+
+}
+
+

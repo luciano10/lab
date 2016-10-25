@@ -1,0 +1,63 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <assert.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <pthread.h>
+#include <string.h>
+char* path;
+//pthread_mutex_t sem;
+int  metodo (char *);
+int get(int ,char * ,char*);
+int post (int, char*, char*);
+
+
+void *method (void* sd_conn){
+	
+	//pthread_mutex_lock(&sem);
+        int sdc;
+        int met;
+        int error;
+        char buff[1024];
+        char buffer[1024];
+        sdc = *((int *)sd_conn);
+        free(sd_conn);
+        error=read(sdc,buffer,sizeof buffer);
+        if (error < 0){
+                write (sdc,"500 Internal Server Error\n",28);
+        }
+        strcpy(buff,buffer);
+        met=metodo(buff);
+         if (met==1){
+                get(sdc,buffer,path);
+        }
+        if (met==2){
+                post(sdc,buffer,path);
+        }
+        if (met == 0){
+                write (sdc,"400-Bad Request\n",16);
+        }
+        close(sdc); 
+	//pthread_mutex_unlock(&sem);
+	pthread_exit(NULL);
+}
+int metodo(char * buffer){
+
+	int met=0;
+	char * cadena;
+	cadena= strtok(buffer,"/");
+	if (!strcmp(cadena,"GET ")){
+		met=1;
+	}	
+	if (!strcmp(cadena,"POST ")){
+		met=2;
+	}
+	return met;
+
+}
